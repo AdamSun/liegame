@@ -1,0 +1,6 @@
+.idea
+
+# Python
+*.pyc
+*.py[cod]
+*$py.class
