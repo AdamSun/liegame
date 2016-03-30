@@ -4,28 +4,31 @@
     created by Adam Sun
 '''
 
-from twisted.internet.protocol import Protocol
+from common import event
 
-class Echo(Protocol):
+class A(object):
+    def abc(self, data):
+        if data:
+            print data
+        else:
+            print "abc"
 
-    def __init__(self, factory):
-        self.factory = factory
+arr = []
 
-    def dataReceived(self, data):
-        self.transport.write(data)
+def test_func(func):
+    arr.append(func)
+    if callable(func):
+        func()
 
-    def connectionMade(self):
-        self.factory.numProtocols = self.factory.numProtocols + 1
-        self.transport.write(
-            "Welcome! There are currently %d open connections.\n" %
-            (self.factory.numProtocols,))
+a = A()
+b = A()
+# test_func(a.abc)
+# test_func(a.abc)
 
-    def connectionLost(self, reason):
-        self.factory.numProtocols = self.factory.numProtocols - 1
+# if arr[0] == arr[1]:
+#     print "the same func"
 
-
-
-class QOTD(Protocol):
-    def connectionMade(self):
-        self.transport.write("An apple a day keeps the doctor away\r\n")
-        self.transport.loseConnection()
+event_manager = event.EventManager()
+event_manager.add_event("abc", a.abc)
+event_manager.add_event("abc", b.abc)
+event_manager.dispatch_event("abc", "bac")
