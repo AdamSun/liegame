@@ -31,6 +31,9 @@ class LGBaseFactory(protocol.Factory):
     def __init__(self):
         self.__connections = []
 
+    def connection_count(self):
+        return len(self.__connections)
+
     def add_connection(self, con):
         """
         record the protocol

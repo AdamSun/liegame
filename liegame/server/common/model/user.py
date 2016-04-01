@@ -12,4 +12,6 @@ class User(object):
         self.nick_name = ""
         self.email = ""
         self.avatar = ""
+        self.password = ""
+        self.is_admin = 0
         self.session = None
