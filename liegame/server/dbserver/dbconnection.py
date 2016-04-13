@@ -41,11 +41,11 @@ class MYSQLConnnection(BaseDBConnection):
     def query(self, type, sub_type):
         if not self.dbpool:
             return
-        if type == config.MODULE_TYPE_USER:
+        if type == config.MODULE_USER:
             self.query_user(sub_type)
 
     def query_user(self, sub_type):
-        if sub_type == config.MODULE_SUBTYPE_CREATE:
+        if sub_type == config.MODULE_USER_CREATE:
             user_name = self.session.user.user_name
             nick_name = self.session.user.nick_name
             email = self.session.user.email
@@ -56,7 +56,7 @@ class MYSQLConnnection(BaseDBConnection):
             d = self.dbpool.runQuery(sql)
             d.addCallback(self.user_create_success)
             print "start query"
-        elif sub_type == config.MODULE_SUBTYPE_SEARCH_BY_USERNAME:
+        elif sub_type == config.MODULE_USER_SEARCH_BY_USERNAME:
             user_name = self.session.user.user_name
             sql = dbqueryconst.SEARCH_USER_BY_USERNAME % user_name
             d = self.dbpool.runQuery(sql)

@@ -13,7 +13,7 @@ class LGBaseProtocol(protocol.Protocol):
     def connectionMade(self):
         self.factory.add_connection(self)
         assert not hasattr(self, 'session')
-        self.createSession()
+        self.create_session()
 
     def connectionLost(self, reason):
         self.session.lost_connection()
@@ -22,7 +22,7 @@ class LGBaseProtocol(protocol.Protocol):
     def dataReceived(self, data):
         self.session.read_data(data)
 
-    def createSession(self):
+    def create_session(self):
         self.session = LGBaseSession(self.factory, self)
 
 
@@ -58,15 +58,18 @@ class LGBaseFactory(protocol.Factory):
         return LGBaseProtocol()
 
 
-#包头长度
+#header len
 HEADER_LEN = 2
-#命令长度
-OPCODE_LEN = 2
+#module type len
+MODULE_TYPE_LEN = 2
+#module subtype len
+MODULE_SUBTYPE_LEN = 2
 
 class Package(object):
-    def __init__(self, cmd, data = None):
+    def __init__(self, type, subtype, data = None):
         self.read_cursor = 0
-        self.cmd = cmd
+        self.type = type
+        self.subtype = subtype
         if data:
             assert isinstance(data, str)
             self.pkg_data = data
@@ -77,10 +80,10 @@ class Package(object):
         self.read_cursor = 0
 
     def get_full_size(self):
-        return 4 + len(self.pkg_data)
+        return 6 + len(self.pkg_data)
 
     def get_full_data(self):
-        return struct.pack('>H', len(self.pkg_data)+2) + struct.pack('<H', self.cmd) + self.pkg_data
+        return struct.pack('>H', len(self.pkg_data) + 4) + struct.pack('<H', self.type) + struct.pack('<H', self.subtype) + self.pkg_data
 
     def __lshift__(self, arg):
         #对于字符串，用[str_length(uint16)]跟[字符串]串接表示
@@ -124,6 +127,38 @@ class LGBaseSession(object):
         self.connection = connection
 
     def read_data(self, data):
+        """
+        recieve the data from client
+        :param data:
+        :return:
+        """
+        self.pkg_data += data
+        if self.pkg_size == None:
+            #get the len of the data
+            if len(self.pkg_data) >= HEADER_LEN:
+                (self.pkg_size, ) = struct.unpack('>H', self.pkg_data[0:HEADER_LEN])
+                self.pkg_data = self.pkg_data[HEADER_LEN:]
+        else:
+            return
+        #wait for more data
+        if len(self.pkg_data) < self.pkg_size:
+            return
+        #get the type and subtype
+        (type, subtype) = struct.unpack('<HH', self.pkg_data[0:(MODULE_TYPE_LEN + MODULE_SUBTYPE_LEN)])[0]
+        #handle the data by the type and subtype
+        self.handle_data(Package(type, subtype, self.pkg_data[(MODULE_TYPE_LEN + MODULE_SUBTYPE_LEN):self.pkg_size]))
+        #reset
+        self.pkg_data = self.pkg_data[self.pkg_size:]
+        self.pkg_size = None
+
+    def handle_data(self, type, subtype, data):
+        """
+        the subclass should handle the data for its specific logic
+        :param type:
+        :param subtype:
+        :param data:
+        :return:
+        """
         pass
 
     def send_data(self, data):
@@ -141,3 +176,4 @@ class LGBaseSession(object):
 
     def lost_connection(self):
         self.connection = None
+        self.factory = None

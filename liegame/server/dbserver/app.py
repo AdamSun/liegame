@@ -18,9 +18,9 @@ import MySQLdb
 dbpool = adbapi.ConnectionPool("MySQLdb", config.MYSQL_IP, config.MYSQL_USER, config.MYSQL_PASSWORD, config.DB_NAME)
 
 class LGDBProtocol(base.LGBaseProtocol):
-    def dataReceived(self, data):
-        print data
-
+    """
+    LGDBProtocol
+    """
     def connectionMade(self):
         if self.factory.connection_count() >= config.MAX_CONNECTION_NUMBER:
             self.transport.write("the connection is full")
@@ -46,6 +46,10 @@ class LGDBSession(base.LGBaseSession):
             self.db_connection.disconnect()
             self.db_connection = None
 
+    def handle_data(self, type, subtype, data):
+        # test by fanglv
+        print "type = %d && subtype = %d" % (type, subtype)
+
 class App(object):
 
     def start(self):
@@ -61,15 +65,16 @@ class App(object):
         reactor.stop()
 
     def test_db(self):
-        for i in range(0, 1000):
-            session = LGDBSession(None, None)
-            session.user.user_name = u"adam123%s" % i
-            session.user.password = hashlib.sha224(u"123456").hexdigest()
-            session.user.nick_name = u"Adam"
-            session.user.email = u"123@qq.com"
-            session.user.avatar = u"http://127.0.0.1/liegamedata/avatar/default.png"
-            session.user.is_admin = 0
-            session.db_connection.query(0, 1)
+        pass
+        # for i in range(0, 1000):
+        #     session = LGDBSession(None, None)
+        #     session.user.user_name = u"adam123%s" % i
+        #     session.user.password = hashlib.sha224(u"123456").hexdigest()
+        #     session.user.nick_name = u"Adam"
+        #     session.user.email = u"123@qq.com"
+        #     session.user.avatar = u"http://127.0.0.1/liegamedata/avatar/default.png"
+        #     session.user.is_admin = 0
+        #     session.db_connection.query(0, 1)
 
 
 

@@ -5,6 +5,7 @@
 '''
 
 from common import event
+from common.strfilter import is_email_legal
 
 class A(object):
     def abc(self, data):
@@ -32,3 +33,8 @@ event_manager = event.EventManager()
 event_manager.add_event("abc", a.abc)
 event_manager.add_event("abc", b.abc)
 event_manager.dispatch_event("abc", "bac")
+
+email = "fdasdfsad123@123qq.com"
+print "the validate code is %d" % is_email_legal(email)
+
+print "\\"
